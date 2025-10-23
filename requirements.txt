@@ -5,3 +5,4 @@ gitpython
 google-adk
 langchain-community
 wikipedia
+supabase
