@@ -1,6 +1,7 @@
 import os 
 from supabase import create_client, Client
 from datetime import datetime 
+from datetime import timedelta
 
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
@@ -20,8 +21,8 @@ def insert_wallet(name: str, type: str, balance: float = 0.0):
         "name": name,
         "type": type,
         "balance": balance,
-        "created_at": datetime.now().date(),
-        "updated_at": datetime.now().date(),
+        "created_at": datetime.now().isoformat(),
+        "updated_at": datetime.now().isoformat(),
     }).execute()
     
 
@@ -43,7 +44,7 @@ def insert_investment(asset_name: str, type: str, amount_invested: float, from_w
         "amount_invested": amount_invested,
         "current_value": amount_invested,
         "profit": 0.0,
-        "profit_percentage": 0.0,
+        "profit_percent": 0.0,
         "start_date": start_date,
         "from_wallet": from_wallet,
     }).execute()
@@ -52,7 +53,7 @@ def insert_investment(asset_name: str, type: str, amount_invested: float, from_w
         "balance": supabase.table('wallets').select('balance').eq('name', from_wallet).execute().data[0]['balance'] - amount_invested
     }).eq('name', from_wallet).execute()
 
-def insert_debts(name: str, amount: float, interest_rate: float, to_wallet: str, start_date: datetime.date = datetime.now().date(), due_date: datetime.date = datetime.now().date()): 
+def insert_debts(name: str, amount: float, interest_rate: float, to_wallet: str, start_date: datetime.date = datetime.now().date().isoformat(), due_date: datetime.date = datetime.now().date().isoformat()): 
     '''
     id: auto increment primary key
     name: name of the debtor
@@ -139,10 +140,11 @@ def delete_transaction(transaction_id: int):
     '''
     Delete a transaction by its ID.
     '''
-    supabase.table("transactions").delete().eq("id", transaction_id).execute()
     wallet_name = supabase.table("transactions").select("wallet").eq("id", transaction_id).execute().data[0]['wallet']
     amount = supabase.table("transactions").select("amount").eq("id", transaction_id).execute().data[0]['amount']
     type = supabase.table("transactions").select("type").eq("id", transaction_id).execute().data[0]['type']
+    supabase.table("transactions").delete().eq("id", transaction_id).execute()
+
     if (type == "expense"):
         supabase.table('wallets').update({
             "balance": supabase.table('wallets').select('balance').eq('name', wallet_name).execute().data[0]['balance'] + amount
@@ -156,29 +158,171 @@ def delete_investment(investment_id: int):
     '''
     Delete an investment by its ID.
     '''
-    supabase.table("investments").delete().eq("id", investment_id).execute()
     wallet_name = supabase.table("investments").select("wallet").eq("id", investment_id).execute().data[0]['wallet']
     amount_invested = supabase.table("investments").select("amount_invested").eq("id", investment_id).execute().data[0]['amount_invested']
     supabase.table('wallets').update({
         "balance": supabase.table('wallets').select('balance').eq('name', wallet_name).execute().data[0]['balance'] + amount_invested
     }).eq('name', wallet_name).execute()
     
+    supabase.table("investments").delete().eq("id", investment_id).execute()
+    
+    
 def delete_debt(debt_id: int):
     '''
     Delete a debt by its ID.
     '''
-    supabase.table("debts").delete().eq("id", debt_id).execute()
     wallet_name = supabase.table("debts").select("wallet").eq("id", debt_id).execute().data[0]['wallet']
     amount = supabase.table("debts").select("amount").eq("id", debt_id).execute().data[0]['amount']
     supabase.table('wallets').update({
         "balance": supabase.table('wallets').select('balance').eq('name', wallet_name).execute().data[0]['balance'] + amount
     }).eq('name', wallet_name).execute()
+    supabase.table("debts").delete().eq("id", debt_id).execute()
 
-def update_wallet_balance(wallet_name: str, new_balance: float):
+def delete_wallet(wallet_name: str):
     '''
-    Update the balance of a wallet.
+    Delete a wallet by its name.
     '''
-    supabase.table("wallets").update({
-        "balance": new_balance,
-        "updated_at": datetime.now().date(),
-    }).eq("name", wallet_name).execute()
+    supabase.table("wallets").delete().eq("name", wallet_name).execute()
+
+def update_wallet(wallet_name: str, new_data: dict):
+    '''
+    Update wallet information.
+    new_data: dictionary containing fields to update
+    '''
+    supabase.table("wallets").update(new_data).eq("name", wallet_name).execute()
+
+def update_investment(investment_id: int, new_data: dict):
+    '''
+    Update investment information.
+    new_data: dictionary containing fields to update
+    '''
+    supabase.table("investments").update(new_data).eq("id", investment_id).execute()
+    
+def update_debt(debt_id: int, new_data: dict):
+    '''
+    Update debt information.
+    new_data: dictionary containing fields to update
+    '''
+    supabase.table("debts").update(new_data).eq("id", debt_id).execute()
+    
+def update_transaction(transaction_id: int, new_data: dict):
+    '''
+    Update transaction information.
+    new_data: dictionary containing fields to update
+    '''
+    supabase.table("transactions").update(new_data).eq("id", transaction_id).execute()
+
+def financial_summary():
+    '''
+    Returns a financial summary for a period.
+
+    The function computes total income, total expense, total invested and total
+    debt taken within a given period. It infers the period from the provided
+    start/end timestamps when available. The returned dictionary contains the
+    input period (string), ISO timestamps for the start/end, aggregated totals
+    and a short list of insights.
+
+    Note: This implementation reads all transactions/investments/debts via the
+    existing helper functions in this module and performs aggregation in
+    Python. For high-volume datasets consider using a DB-side aggregation or
+    implementing pagination.
+    '''
+
+    def _parse_iso(value):
+        # Accept datetime objects or ISO-formatted strings (with or without Z)
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            s = value
+            # handle Z timezone
+            if s.endswith('Z'):
+                s = s[:-1] + '+00:00'
+            try:
+                return datetime.fromisoformat(s)
+            except Exception:
+                # fallback: try to parse just the date portion
+                try:
+                    return datetime.fromisoformat(s.split('T')[0])
+                except Exception:
+                    return None
+        return None
+
+    now = datetime.now()
+    # default period: last 30 days
+    end_dt = now
+    start_dt = now - timedelta(days=30)
+
+    # Gather data
+    transactions = read_transactions() or []
+    investments = read_investments() or []
+    debts = read_debts() or []
+
+    total_income = 0.0
+    total_expense = 0.0
+    total_invest = 0.0
+    total_debt = 0.0
+
+    # Transactions: sum incomes and expenses within the period
+    for t in transactions:
+        t_time = _parse_iso(t.get('time'))
+        if t_time is None:
+            # skip transactions without a parsable time
+            continue
+        if not (start_dt <= t_time <= end_dt):
+            continue
+        t_type = t.get('type', '').lower()
+        amount = float(t.get('amount') or 0.0)
+        if t_type == 'income':
+            total_income += amount
+        elif t_type == 'expense':
+            total_expense += amount
+
+    # Investments: sum amount_invested where start_date in period
+    for inv in investments:
+        inv_time = _parse_iso(inv.get('start_date'))
+        if inv_time is None:
+            continue
+        if not (start_dt <= inv_time <= end_dt):
+            continue
+        total_invest += float(inv.get('amount_invested') or 0.0)
+
+    # Debts: sum amounts taken within the period
+    for d in debts:
+        d_time = _parse_iso(d.get('start_date'))
+        if d_time is None:
+            continue
+        if not (start_dt <= d_time <= end_dt):
+            continue
+        total_debt += float(d.get('amount') or 0.0)
+
+    # Basic insights
+    insights = []
+    net_cash_flow = total_income - total_expense - total_invest + total_debt
+    if net_cash_flow < 0:
+        insights.append(f"Negative net cash flow over the period: {net_cash_flow:.2f}")
+    else:
+        insights.append(f"Positive net cash flow over the period: {net_cash_flow:.2f}")
+
+    if total_expense > total_income:
+        insights.append("Expenses exceed income. Consider reducing discretionary spending.")
+    if total_invest > 0 and total_invest > (total_income * 0.5 if total_income else total_invest):
+        insights.append("High allocation to investments this period relative to income.")
+
+    summary = {
+        'period': 'last_30_days',
+        'start_date': start_dt.isoformat(),
+        'end_date': end_dt.isoformat(),
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'total_invest': total_invest,
+        'total_debt': total_debt,
+        'net_cash_flow': net_cash_flow,
+        'insights': insights,
+        'created_at': datetime.now().isoformat(),
+    }
+
+    return summary
+    
+    

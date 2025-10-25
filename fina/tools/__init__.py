@@ -19,6 +19,26 @@ from .utils import (
     set_current_corpus,
     )
 
+from .database import (
+    insert_wallet, 
+    insert_investment,
+    insert_debts,
+    insert_transaction,
+    read_wallets,
+    read_investments,
+    read_debts,
+    read_transactions,
+    delete_transaction, 
+    delete_investment, 
+    delete_debt, 
+    delete_wallet,
+    update_debt, 
+    update_investment,
+    update_wallet,
+    update_transaction,
+    financial_summary, 
+)
+
 __all__ = [
     "log_query_to_model",
     "log_model_response",
@@ -33,4 +53,21 @@ __all__ = [
     "delete_document",
     "get_corpus_info",
     "list_corpora",
+    "insert_wallet",
+    "insert_investment",
+    "insert_debts",
+    "insert_transaction",
+    "read_wallets",
+    "read_investments",
+    "read_debts",
+    "read_transactions",
+    "delete_transaction",
+    "delete_investment",
+    "delete_debt",
+    "delete_wallet",
+    "update_debt",
+    "update_investment",
+    "update_wallet",
+    "update_transaction",
+    "financial_summary",
 ]

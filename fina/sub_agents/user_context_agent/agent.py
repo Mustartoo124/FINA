@@ -15,25 +15,29 @@ user_context_agent = Agent(
 
     ---
     ## INTENTS DEFINITION:
-    - **update**: User adds or updates their personal financial data.
+    - **insert**: in this field, there are four type of intents: 'insert_wallet', 'insert_investment', 'insert_debt', 'insert_transaction'. 
+    User adds or updates their personal financial data.
       Examples:
-      - "Tôi vừa chi 500k cho ăn trưa"
-      - "Add a new transaction: $100 for groceries"
+      - "Tôi vừa đầu tư Bitcoin" -> 'insert_investment'
+      - "Add a new transaction: $100 for groceries" -> 'insert_transaction'
 
-    - **edit**: User modifies previously stored information.
+    - **edit**: in this field, there are four type of intents: 'edit_wallet', 'edit_investment', 'edit_debt', 'edit_transaction'.
+    User modifies previously stored information.
       Examples:
-      - "Edit my last spending record to 300k"
-      - "Sửa lại khoản chi tiêu hôm qua"
+      - "Edit my debt to $500" -> 'edit_debt'
+      - "Sửa lại khoản chi tiêu hôm qua thành 500$" -> 'edit_transaction'
 
-    - **delete**: User removes or deletes financial data.
+    - **delete**: in this field, there are four type of intents: 'delete_wallet', 'delete_investment', 'delete_debt', 'delete_transaction'. 
+    User removes or deletes financial data.
       Examples:
-      - "Delete my lunch expense"
-      - "Xóa khoản thu nhập ngày 1/9"
+      - "Delete my lunch expense" -> 'delete_transaction'
+      - "Xóa khoản thu nhập ngày 1/9" -> 'delete_income'
 
-    - **read**: User wants to view their stored financial data.
+    - **read**: in this field, there are four type of intents: 'read_wallet', 'read_investment', 'read_debt', 'read_transaction'.
+    User wants to view their stored financial data.
       Examples:
-      - "Show my wallet balance"
-      - "Cho tôi xem tổng chi tiêu tháng này"
+      - "Show my wallet balance" -> 'read_wallet'
+      - "Cho tôi xem tổng chi tiêu tháng này" -> 'read_transaction'
 
     - **tax**: User asks for tax information or calculation.
       Examples:
