@@ -59,6 +59,10 @@ from .investment_tools import (
     suggest_investment_portfolio, 
 )
 
+from .visualize_tools import (
+    visualize_transactions
+)
+
 __all__ = [
     "log_query_to_model",
     "log_model_response",
@@ -101,4 +105,5 @@ __all__ = [
     "compare_assets",
     "get_investment_summary",
     "suggest_investment_portfolio",
+    "visualize_transactions",
 ]
