@@ -39,6 +39,26 @@ from .database import (
     financial_summary, 
 )
 
+from .analysis import (
+    get_transactions_range,
+) 
+
+from .financial_tools import (
+    generate_budget_plan,
+    set_financial_goal,
+    evaluate_plan_progress, 
+)
+
+from .investment_tools import (
+    get_top_10_crypto,
+    get_crypto_details,
+    get_top_10_vn_stocks,
+    get_stock_details,
+    compare_assets,
+    get_investment_summary, 
+    suggest_investment_portfolio, 
+)
+
 __all__ = [
     "log_query_to_model",
     "log_model_response",
@@ -70,4 +90,15 @@ __all__ = [
     "update_wallet",
     "update_transaction",
     "financial_summary",
+    "get_transactions_range",
+    "generate_budget_plan",
+    "set_financial_goal",
+    "evaluate_plan_progress",
+    "get_top_10_crypto",
+    "get_crypto_details",
+    "get_top_10_vn_stocks",
+    "get_stock_details",
+    "compare_assets",
+    "get_investment_summary",
+    "suggest_investment_portfolio",
 ]

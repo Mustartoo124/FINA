@@ -22,8 +22,9 @@ from ...tools.database import (
     financial_summary,
 )
 from ..tax_agent import tax_agent
-from ..analysis_agent import analysis_agent
-
+from ..visualize_agent import visualize_agent
+from ..invest_agent import invest_agent
+from ..planner_agent import planner_agent
 
 database_agent = Agent(
     name="database_agent",
@@ -36,7 +37,7 @@ and to route tasks to the appropriate sub-agents when necessary.
 
 ---
 
-## 🧠 INTENT HANDLING LOGIC
+## INTENT HANDLING LOGIC
 
 You will receive a 'state' that includes 'intent' and 'query'.  
 Use the 'intent' field to determine which action to take.  
@@ -44,7 +45,7 @@ Each intent directly maps to a specific tool or agent as follows:
 
 ---
 
-### 🟢 INSERT ACTIONS
+### INSERT ACTIONS
 Use these tools to insert new data:
 - intent = 'insert_wallet' → call tool `insert_wallet`
 - intent = 'insert_investment' → call tool `insert_investment`
@@ -53,7 +54,7 @@ Use these tools to insert new data:
 
 ---
 
-### 🟡 EDIT ACTIONS
+### EDIT ACTIONS
 Use these tools to modify existing data:
 - intent = 'edit_wallet' → call tool `update_wallet`
 - intent = 'edit_investment' → call tool `update_investment`
@@ -62,7 +63,7 @@ Use these tools to modify existing data:
 
 ---
 
-### 🔴 DELETE ACTIONS
+### DELETE ACTIONS
 Use these tools to remove existing data:
 - intent = 'delete_wallet' → call tool `delete_wallet`
 - intent = 'delete_investment' → call tool `delete_investment`
@@ -71,7 +72,7 @@ Use these tools to remove existing data:
 
 ---
 
-### 🔍 READ ACTIONS
+### READ ACTIONS
 Use these tools to read data from the database:
 - intent = 'read_wallet' → call tool `read_wallets`
 - intent = 'read_investment' → call tool `read_investments`
@@ -80,46 +81,35 @@ Use these tools to read data from the database:
 
 ---
 
-### 🧾 TAX ACTION
+### TAX ACTION
 If intent = 'tax':
-- Route this task to the **TaxAgent**.
-- You do not call any tool; simply delegate the query to the TaxAgent.
+- Route this task to the **tax_agent**.
+- You do not call any tool; simply delegate the query to the **tax_agent**.
 
 ---
 
-### 💹 INVEST / PLANNER / VISUALIZE ACTIONS
-If intent is one of ['invest', 'planner', 'visualize']:
+### INVEST / PLANNER ACTIONS
+If intent is one of ['invest', 'planner']:
 1. Call the tool `financial_summary` to summarize financial data.
 2. Store the summary in the system state using `append_to_state('summary', summary_data)`.
-3. Route this task to the **AnalysisAgent** for deeper analysis or visualization.
+3. If intent = 'invest', route the task to the **invest_agent**, if intent = 'planner', route to the **planner_agent**.
 
 ---
 
-### ⚙️ BEHAVIOR RULES
+### VISUALIZE ACTIONS
+If intent is 'visualize':
+1. Route the task to the **visualize_agent**.
+
+---
+
+### BEHAVIOR RULES
 - Always use the tool that exactly matches the user's intent.
 - Never guess or improvise beyond the defined mapping.
 - Return the tool result as your output.
-- If the intent is 'tax' or ['invest', 'planner', 'visualize'], clearly indicate that you are routing the task to the corresponding sub-agent.
+- If the intent is 'tax' or 'invest', 'planner', 'visualize', clearly indicate that you are routing the task to the corresponding sub-agent.
 - If an unknown intent is encountered, respond with:
   "I’m sorry, I could not identify the correct action for your request."
-
----
-
-### 💡 EXAMPLES
-
-**Example 1:**
-User intent = 'insert_transaction'  
-→ Call `insert_transaction(...)` with proper parameters.
-
-**Example 2:**
-User intent = 'tax'  
-→ Output: “Routing task to TaxAgent for tax computation.”
-
-**Example 3:**
-User intent = 'invest'  
-→ Call `financial_summary`, store in state, then route to AnalysisAgent.
-
----
+  
     """,
     before_model_callback=log_query_to_model,
     after_model_callback=log_model_response,
@@ -150,6 +140,8 @@ User intent = 'invest'
     ],
     sub_agents=[
         tax_agent,
-        analysis_agent,
+        visualize_agent, 
+        invest_agent,
+        planner_agent,
     ],
 )
