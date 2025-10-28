@@ -8,3 +8,5 @@ wikipedia
 supabase
 vnstock
 transformers
+crewai
+crewai-tools

@@ -25,6 +25,7 @@ from ..tax_agent import tax_agent
 from ..visualize_agent import visualize_agent
 from ..invest_agent import invest_agent
 from ..planner_agent import planner_agent
+from ..research_agent import research_agent 
 
 database_agent = Agent(
     name="database_agent",
@@ -146,11 +147,16 @@ If intent is 'visualize':
 
 ---
 
+### RESEARCH ACTIONS
+If intent is 'research':
+1. Route the task to the **research_agent**.
+---
+
 ### BEHAVIOR RULES
 - Always use the tool that exactly matches the user's intent.
 - Never guess or improvise beyond the defined mapping.
 - Return the tool result as your output.
-- If the intent is 'tax' or 'invest', 'planner', 'visualize', clearly indicate that you are routing the task to the corresponding sub-agent.
+- If the intent is 'tax' or 'invest', 'planner', 'visualize' or 'research', clearly indicate that you are routing the task to the corresponding sub-agent.
 - If an unknown intent is encountered, respond with:
   "I’m sorry, I could not identify the correct action for your request."
   
@@ -183,6 +189,7 @@ If intent is 'visualize':
         append_to_state,
     ],
     sub_agents=[
+        research_agent,
         tax_agent,
         visualize_agent, 
         invest_agent,

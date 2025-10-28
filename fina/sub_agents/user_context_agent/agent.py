@@ -59,6 +59,11 @@ user_context_agent = Agent(
       - "Show me a chart of my expenses"
       - "Vẽ biểu đồ chi tiêu của tôi"
 
+    - **research**: User wants to research financial topics or gather information.
+      Examples:
+      - "Tìm hiểu về cổ phiếu công nghệ"
+      - "Research the latest trends in cryptocurrency"
+
     - **unknown**: If you cannot confidently classify the intent, use 'unknown'.
       Then politely ask the user to clarify their request.
 
