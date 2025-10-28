@@ -1,17 +1,31 @@
+import { useState, useEffect } from 'react';
 import { useChatLogic } from './hooks/useChatLogic';
 import { Header } from './components/Header';
 import { ChatWindow } from './components/ChatWindow';
 import { ChatInput } from './components/ChatInput';
+import { EnvConfigScreen } from './components/EnvConfigScreen';
 import './styles/chat.css';
 
 function App() {
+  const [configComplete, setConfigComplete] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { messages, addMessage, deleteMessage, clearMessages } = useChatLogic();
 
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('envConfig');
+    if (savedConfig) {
+      setConfigComplete(true);
+    }
+    setLoading(false);
+  }, []);
+
+  const handleConfigComplete = (config) => {
+    setConfigComplete(true);
+  };
+
   const handleSendMessage = (text) => {
-    // Add user message
     addMessage(text, 'user');
 
-    // Simulate assistant response after a short delay
     setTimeout(() => {
       const responses = [
         'That\'s a great message! 😊',
@@ -27,6 +41,14 @@ function App() {
       addMessage(randomResponse, 'assistant');
     }, 600);
   };
+
+  if (loading) {
+    return null;
+  }
+
+  if (!configComplete) {
+    return <EnvConfigScreen onConfigComplete={handleConfigComplete} />;
+  }
 
   return (
     <div className="chat-container">
