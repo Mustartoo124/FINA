@@ -25,7 +25,7 @@ from ..tax_agent import tax_agent
 from ..visualize_agent import visualize_agent
 from ..invest_agent import invest_agent
 from ..planner_agent import planner_agent
-from ..research_agent import research_agent 
+from ..research_agent import research_agent
 
 database_agent = Agent(
     name="database_agent",
