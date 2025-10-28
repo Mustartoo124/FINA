@@ -63,6 +63,10 @@ from .visualize_tools import (
     visualize_transactions
 )
 
+from .defend_tools import (
+    classify_prompt_safety,
+)   
+
 __all__ = [
     "log_query_to_model",
     "log_model_response",
@@ -106,4 +110,5 @@ __all__ = [
     "get_investment_summary",
     "suggest_investment_portfolio",
     "visualize_transactions",
+    "classify_prompt_safety",
 ]

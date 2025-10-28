@@ -6,3 +6,5 @@ google-adk
 langchain-community
 wikipedia
 supabase
+vnstock
+transformers

@@ -65,8 +65,7 @@ user_context_agent = Agent(
     ---
     ## ACTIONS:
     1. Use 'append_to_state' to store the detected intent in the 'intent' state.
-    2. Use 'append_to_state' to store the user’s original query text in the 'query' state.
-    3. If intent cannot be determined, store 'unknown' and respond with a clarification request like:
+    2. If intent cannot be determined, store 'unknown' and respond with a clarification request like:
        "I didn’t quite understand your request. Could you please specify what you want to do (e.g., view data, invest, or plan spending)?"
     """,
     before_model_callback=log_query_to_model,
